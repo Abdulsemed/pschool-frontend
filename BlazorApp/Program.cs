@@ -1,6 +1,5 @@
 using BlazorApp;
 using BlazorApp.Services;
-using DotNetEnv;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
