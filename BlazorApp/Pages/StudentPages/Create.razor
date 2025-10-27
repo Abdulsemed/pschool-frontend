@@ -1,5 +1,6 @@
 ﻿@page "/students/create"
 @using BlazorApp.Models
+@using BlazorApp.Responses
 @using BlazorApp.Services
 @using Newtonsoft.Json
 
@@ -15,16 +16,41 @@
 	<div class="mb-3">
 		<label for="inputForFirstName" class="form-label">First Name</label>
 		<input type="text" class="form-control" id="inputForFirstName" @bind="student.FirstName">
+		@if( errors.ContainsKey("FirstName")){
+			foreach(var error in errors["FirstName"]){
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
 	</div>
 
 	<div class="mb-3">
 		<label for="inputForLastName" class="form-label">Last Name</label>
 		<input type="text" class="form-control" id="inputForLastName" @bind="student.LastName">
+		@if (errors.ContainsKey("LastName"))
+		{
+			foreach (var error in errors["LastName"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
 	</div>
 
 	<div class="mb-3">
 		<label for="inputForAge" class="form-label">Age</label>
 		<input type="number" class="form-control" id="inputForFirstName" @bind="student.Age">
+		@if (errors.ContainsKey("Age"))
+		{
+			foreach (var error in errors["Age"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
 	</div>
 	<div class="mb-3">
 		<label for="selectForGender" class="form-label">Gender</label>
@@ -34,6 +60,15 @@
 			<option>Female</option>
 
 		</select>
+		@if (errors.ContainsKey("Gender"))
+		{
+			foreach (var error in errors["Gender"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
 	</div>
 
 	<div class="mb-3 h-100">
@@ -50,6 +85,16 @@
 				</ul>
 			</div>
 		}
+
+		@if (errors.ContainsKey("Parent"))
+		{
+			foreach (var error in errors["Parent"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
 	</div>
 
 	<button type="button" class="btn btn-primary" @onclick="onSubmit">Submit</button>
@@ -59,6 +104,7 @@
 	private StudentModel student = new StudentModel();
 	private string searchTerm { get; set; }
 	private List<ParentModel> suggestions { get; set; } = new List<ParentModel>();
+	private Dictionary<string,List<string>> errors = new Dictionary<string,List<string>>();
 
 
 	private async void OnSearch(ChangeEventArgs e)
@@ -68,6 +114,7 @@
 		{
 			var response = await ParentService.SearchParentByName(searchTerm);
 			suggestions = JsonConvert.DeserializeObject<List<ParentModel>>(response.data.ToString());
+			StateHasChanged();
 
 		}
 		else
@@ -85,8 +132,22 @@
 
 	private async void onSubmit()
 	{
-		await StudentService.CreateStudent(student);
-		NavigationManager.NavigateTo("/students");
+		errors.Clear();
+		var response = await StudentService.CreateStudent(student);
+		if (response.IsSuccessStatusCode)
+		{
+			NavigationManager.NavigateTo("/students");
+
+		}
+		else{
+			var errrorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+			errors = errrorResponse.errors;
+			if (student.ParentId == new Guid("00000000-0000-0000-0000-000000000000"))
+			{
+				errors["Parent"] = ["The parent field is required"];
+			}
+			StateHasChanged();
+		}
 
 	}
 

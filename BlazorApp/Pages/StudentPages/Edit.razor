@@ -1,6 +1,7 @@
 ﻿@page "/students/edit/{StudentId:guid}"
 @using BlazorApp.DTOs.StudentsDtos
 @using BlazorApp.Models
+@using BlazorApp.Responses
 @using BlazorApp.Services
 @using Newtonsoft.Json
 
@@ -15,16 +16,48 @@
 	<div class="mb-3">
 		<label for="inputForFirstName" class="form-label">First Name</label>
 		<input type="text" class="form-control" id="inputForFirstName" @bind="@student.FirstName" contenteditable="true">
+
+		@if (errors.ContainsKey("FirstName"))
+		{
+			foreach (var error in errors["FirstName"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
 	</div>
 
 	<div class="mb-3">
 		<label for="inputForLastName" class="form-label">Last Name</label>
 		<input type="text" class="form-control" id="inputForLastName" @bind="@student.LastName" contenteditable="true">
+
+		@if (errors.ContainsKey("LastName"))
+		{
+			foreach (var error in errors["LastName"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
+
 	</div>
 
 	<div class="mb-3">
 		<label for="inputForAge" class="form-label">Age</label>
-		<input type="text" class="form-control" id="inputForAge" @bind="@student.Age" contenteditable="true">
+		<input type="number" class="form-control" id="inputForAge" @bind="@student.Age" contenteditable="true">
+
+		@if (errors.ContainsKey("Age"))
+		{
+			foreach (var error in errors["Age"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
+
 	</div>
 	<div class="mb-3">
 		<label for="selectForGender" class="form-label">Gender</label>
@@ -37,6 +70,16 @@
 			{	
 				<option>Female</option>
 				<option>Male</option>
+
+			}
+
+			@if (errors.ContainsKey("Gender"))
+			{
+				foreach (var error in errors["Gender"])
+				{
+					<p class="text-danger text-sm-start">@error</p>
+
+				}
 
 			}
 
@@ -57,6 +100,17 @@
 				</ul>
 			</div>
 		}
+
+		@if (errors.ContainsKey("Parent"))
+		{
+			foreach (var error in errors["Parent"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
+
 	</div>
 
 	<button type="button" class="btn btn-primary" @onclick="onSubmit">Submit</button>
@@ -67,6 +121,8 @@
 	public Guid StudentId { get; set; }
 	private Guid ParentId { get; set; }
 	private GetStudentDto student = new GetStudentDto();
+	private Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
+
 	protected override async Task OnInitializedAsync()
 	{
 		var response = await StudentService.GetStudentById(StudentId);
@@ -107,9 +163,23 @@
 			Gender = student.Gender,
 			ParentId = ParentId
 		};
+		errors.Clear();
+		var response = await StudentService.EditStudent(StudentId, editStudent);
+		if (response.IsSuccessStatusCode)
+		{
+			NavigationManager.NavigateTo("/students");
 
-		await StudentService.EditStudent(StudentId, editStudent);
-		NavigationManager.NavigateTo("/students");
+		}
+		else
+		{
+			var errrorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+			errors = errrorResponse.errors;
+			if (ParentId == new Guid("00000000-0000-0000-0000-000000000000"))
+			{
+				errors["Parent"] = ["The parent field is required"];
+			}
+			StateHasChanged();
+		}
 
 	}
 
