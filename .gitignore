@@ -1,3 +1,4 @@
 .env
 .vs
 BlazorApp/bin
+BlazorApp/obj
