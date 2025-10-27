@@ -1,0 +1,93 @@
+﻿@page "/students/create"
+@using BlazorApp.Models
+@using BlazorApp.Services
+@using Newtonsoft.Json
+
+@inject NavigationManager NavigationManager
+@inject StudentService StudentService;
+@inject ParentService ParentService;
+
+<h3>Create Student</h3>
+
+<form class="">
+	<h4 class="text-center">Add Student</h4>
+		
+	<div class="mb-3">
+		<label for="inputForFirstName" class="form-label">First Name</label>
+		<input type="text" class="form-control" id="inputForFirstName" @bind="student.FirstName">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForLastName" class="form-label">Last Name</label>
+		<input type="text" class="form-control" id="inputForLastName" @bind="student.LastName">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForAge" class="form-label">Age</label>
+		<input type="number" class="form-control" id="inputForFirstName" @bind="student.Age">
+	</div>
+	<div class="mb-3">
+		<label for="selectForGender" class="form-label">Gender</label>
+		<select id="selectForGender" class="form-select" @bind="student.Gender">
+			<option></option>
+			<option>Male</option>
+			<option>Female</option>
+
+		</select>
+	</div>
+
+	<div class="mb-3 h-100">
+		<label for="parentSearch" class="form-label">Search Parent/Guardian</label>
+		<input type="text" id="parentSearch" class="form-control" @bind="searchTerm" @oninput="OnSearch" />
+		@if (suggestions.Count > 0)
+		{
+			<div class="suggestion-list">
+				<ul class="list-group">
+					@foreach (var suggestion in suggestions)
+					{
+						<li class="list-group-item" @onclick="() => SelectSuggestion(suggestion.FirstName +' ' +suggestion.LastName , suggestion.Id)">@suggestion.FirstName @suggestion.LastName</li>
+					}
+				</ul>
+			</div>
+		}
+	</div>
+
+	<button type="button" class="btn btn-primary" @onclick="onSubmit">Submit</button>
+</form>
+
+@code {
+	private StudentModel student = new StudentModel();
+	private string searchTerm { get; set; }
+	private List<ParentModel> suggestions { get; set; } = new List<ParentModel>();
+
+
+	private async void OnSearch(ChangeEventArgs e)
+	{
+		searchTerm = e.Value.ToString();
+		if (!String.IsNullOrEmpty(searchTerm))
+		{
+			var response = await ParentService.SearchParentByName(searchTerm);
+			suggestions = JsonConvert.DeserializeObject<List<ParentModel>>(response.data.ToString());
+
+		}
+		else
+		{
+			suggestions = [];
+		}
+	}
+
+	private void SelectSuggestion(string suggestion, Guid parentId)
+	{
+		searchTerm = suggestion;
+		student.ParentId = parentId;
+		suggestions.Clear(); // Clear suggestions after selecting
+	}
+
+	private async void onSubmit()
+	{
+		await StudentService.CreateStudent(student);
+		NavigationManager.NavigateTo("/students");
+
+	}
+
+}

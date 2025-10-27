@@ -1,0 +1,54 @@
+﻿@page "/students/details/{StudentID:guid}"
+@using BlazorApp.DTOs.StudentsDtos
+@using BlazorApp.Models
+@using BlazorApp.Services
+@using Newtonsoft.Json
+
+@inject StudentService StudentService
+
+
+<h3>Student Details</h3>
+<div class="d-flex flex-column gap-2">
+	<div class="d-flex gap-3 border-bottom">
+		<p>First Name</p>
+		<h5>@student.FirstName</h5>
+	</div>
+
+	<div class="d-flex gap-3 border-bottom">
+		<p>Last Name</p>
+		<h5>@student.LastName</h5>
+	</div>
+
+	<div class="d-flex gap-3 border-bottom">
+		<p>Age</p>
+		<h5>@student.Age</h5>
+	</div>
+
+	<div class="d-flex gap-3 border-bottom">
+		<p>Gender</p>
+		<h5>@student.Gender</h5>
+	</div>
+
+	<div class="d-flex gap-3 border-bottom">
+		<p>Parent</p>
+			@if(student.Parent != null)
+		{
+			<h5>@student.Parent.FirstName @student.Parent.LastName</h5>
+			
+		}
+	</div>
+</div>
+
+@code {
+
+	[Parameter]
+	public Guid StudentId { get; set; }
+
+	private GetStudentDto student = new GetStudentDto();
+	protected override async Task OnInitializedAsync()
+	{
+		var response = await StudentService.GetStudentById(StudentId);
+		student = JsonConvert.DeserializeObject<GetStudentDto>(response.data.ToString());
+	}
+
+}

@@ -1,0 +1,116 @@
+﻿@page "/students/edit/{StudentId:guid}"
+@using BlazorApp.DTOs.StudentsDtos
+@using BlazorApp.Models
+@using BlazorApp.Services
+@using Newtonsoft.Json
+
+@inject StudentService StudentService;
+@inject ParentService ParentService;
+@inject NavigationManager NavigationManager;
+<h3>Edit Student</h3>
+
+<form class="">
+	<h4 class="text-center">Edit Student</h4>
+
+	<div class="mb-3">
+		<label for="inputForFirstName" class="form-label">First Name</label>
+		<input type="text" class="form-control" id="inputForFirstName" @bind="@student.FirstName" contenteditable="true">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForLastName" class="form-label">Last Name</label>
+		<input type="text" class="form-control" id="inputForLastName" @bind="@student.LastName" contenteditable="true">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForAge" class="form-label">Age</label>
+		<input type="text" class="form-control" id="inputForAge" @bind="@student.Age" contenteditable="true">
+	</div>
+	<div class="mb-3">
+		<label for="selectForGender" class="form-label">Gender</label>
+		<select id="selectForGender" class="form-select">
+			@if (student.Gender != null && student?.Gender.ToLower() == "male") {
+				<option>Male</option>
+				<option>Female</option>
+			}
+			else
+			{	
+				<option>Female</option>
+				<option>Male</option>
+
+			}
+
+		</select>
+	</div>
+
+	<div class="mb-3 h-100">
+		<label for="parentSearch" class="form-label">Search Parent/Guardian</label>
+		<input type="text" id="parentSearch" class="form-control" @bind="searchTerm" @oninput="OnSearch" />
+		@if (suggestions.Count > 0)
+		{
+			<div class="suggestion-list">
+				<ul class="list-group">
+					@foreach (var suggestion in suggestions)
+					{
+						<li class="list-group-item" @onclick="() => SelectSuggestion(suggestion.FirstName +' ' +suggestion.LastName , suggestion.Id)">@suggestion.FirstName @suggestion.LastName</li>
+					}
+				</ul>
+			</div>
+		}
+	</div>
+
+	<button type="button" class="btn btn-primary" @onclick="onSubmit">Submit</button>
+</form>
+
+@code {
+	[Parameter]
+	public Guid StudentId { get; set; }
+	private Guid ParentId { get; set; }
+	private GetStudentDto student = new GetStudentDto();
+	protected override async Task OnInitializedAsync()
+	{
+		var response = await StudentService.GetStudentById(StudentId);
+		student = JsonConvert.DeserializeObject<GetStudentDto>(response.data.ToString());
+		ParentId = student.Parent.Id;
+		searchTerm = student.Parent.FirstName+" " + student.Parent.LastName;
+	}
+
+	private string searchTerm { get; set; }
+	private List<ParentModel> suggestions { get; set; } = new List<ParentModel>();
+
+
+	private async void OnSearch(ChangeEventArgs e)
+	{
+		searchTerm = e.Value.ToString();
+		if (!String.IsNullOrEmpty(searchTerm))
+		{
+			var response = await ParentService.SearchParentByName(searchTerm);
+			suggestions = JsonConvert.DeserializeObject<List<ParentModel>>(response.data.ToString());
+
+		}
+	}
+
+	private void SelectSuggestion(string suggestion, Guid parentId)
+	{
+		searchTerm = suggestion;
+		ParentId = parentId;
+		suggestions.Clear(); // Clear suggestions after selecting
+	}
+
+	private async void onSubmit()
+	{
+		var editStudent = new StudentModel
+		{
+			FirstName = student.FirstName,
+			LastName = student.LastName,
+			Age = student.Age,
+			Gender = student.Gender,
+			ParentId = ParentId
+		};
+
+		await StudentService.EditStudent(StudentId, editStudent);
+		NavigationManager.NavigateTo("/students");
+
+	}
+
+}

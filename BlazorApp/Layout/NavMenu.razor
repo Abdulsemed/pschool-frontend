@@ -1,0 +1,39 @@
+﻿<div class="top-row ps-3 navbar bg-dark border-bottom">
+    <div class="container-fluid">
+        <a class="navbar-brand text-white" href="">Pschool</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="d-flex bg-dark border-bottom">
+    <a class="bi bi-person text-white fs-5"></a>
+    <p class="text-white align-self-end">Alexander Pierce</p>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable bg-dark" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="parents" Match="NavLinkMatch.All">
+                <span class="bi-people-fill me-2 fs-5" aria-hidden="true"></span> Parents
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="students">
+                <span class="bi-person-arms-up me-2 fs-5" aria-hidden="true"></span> Students
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

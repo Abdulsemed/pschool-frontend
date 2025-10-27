@@ -1,0 +1,73 @@
+﻿@page "/parents/delete/{ParentId:guid}"
+@using BlazorApp.Models
+@using BlazorApp.Services
+@using Newtonsoft.Json
+
+@inject ParentService ParentService;
+@inject NavigationManager NavigationManager;
+
+<h3>Delete parent</h3>
+
+<div class="d-flex flex-column gap-2">
+	<div class="d-flex gap-3 border-bottom">
+		<p>First Name</p>
+		<h5>@parent.FirstName</h5>
+	</div>
+
+	<div class="d-flex gap-3 border-bottom">
+		<p>Last Name</p>
+		<h5>@parent.LastName</h5>
+	</div>
+
+	<div class="d-flex gap-3 border-bottom">
+		<p>Username</p>
+		<h5>@parent.Username</h5>
+	</div>
+
+	<div class="d-flex gap-3 border-bottom">
+		<p>Home Address</p>
+		<h5>@parent.HomeAddress</h5>
+	</div>
+
+	<div class="d-flex gap-3 border-bottom">
+		<p>Phone1</p>
+		<h5>@parent.Phone1</h5>
+	</div>
+
+	<div class="d-flex gap-3 border-bottom">
+		<p>Work Phone</p>
+		<h5>@parent.WorkPhone</h5>
+	</div>
+
+	<div class="d-flex gap-3 border-bottom">
+		<p>Home Phone</p>
+		<h5>@parent.HomePhone</h5>
+	</div>
+
+	<div class="d-flex gap-3 border-bottom">
+		<p>Children Count</p>
+		<h5>@parent.children</h5>
+	</div>
+
+	<div class="d-flex gap-2">
+		<button class="btn btn-danger" @onclick="onDelete">Delete</button>
+		<a class="btn btn-primary" href="/parents">Cancel</a>
+	</div>
+</div>
+
+@code {
+
+	[Parameter]
+	public Guid ParentId { get; set; }
+	private ParentModel parent = new ParentModel();
+	protected override async Task OnInitializedAsync()
+	{
+		var response = await ParentService.GetparentById(ParentId);
+		parent = JsonConvert.DeserializeObject<ParentModel>(response.data.ToString());
+	}
+	private async void onDelete()
+	{
+		await ParentService.Deleteparent(ParentId);
+		NavigationManager.NavigateTo("/parents");
+	}
+}

@@ -1,0 +1,65 @@
+﻿@page "/parents/create"
+@using BlazorApp.Models
+
+@using BlazorApp.Services
+@using Newtonsoft.Json
+
+@inject ParentService ParentService;
+@inject NavigationManager NavigationManager;
+
+<h3>Create Parent</h3>
+
+<form class="">
+	<h4 class="text-center">Add Parent</h4>
+		
+	<div class="mb-3">
+		<label for="inputForFirstName" class="form-label">First Name</label>
+		<input type="text" class="form-control" id="inputForFirstName" @bind="parent.FirstName">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForLastName" class="form-label">Last Name</label>
+		<input type="text" class="form-control" id="inputForLastName" @bind="parent.LastName">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForUsername" class="form-label">Username</label>
+		<input type="text" class="form-control" id="inputForUsername" @bind="parent.Username">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForHomeAddress" class="form-label">Home Address</label>
+		<input type="text" class="form-control" id="inputForHomeAddress" @bind="parent.HomeAddress">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForPhone1" class="form-label">Phone1</label>
+		<input type="text" class="form-control" id="inputForPhone1" @bind="parent.Phone1">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForWorkPhone" class="form-label">Work Phone</label>
+		<input type="text" class="form-control" id="inputForWorkPhone" @bind="parent.WorkPhone">
+	</div>
+
+
+	<div class="mb-3">
+		<label for="inputForHomePhone" class="form-label">Home Phone</label>
+		<input type="text" class="form-control" id="inputForHomePhone" @bind="parent.HomePhone">
+	</div>
+
+
+	<button type="button" class="btn btn-primary" @onclick="onSubmit">Submit</button>
+</form>
+
+@code {
+
+	private ParentModel parent = new ParentModel();
+
+	private async void onSubmit()
+	{
+		await ParentService.CreateParent(parent);
+		NavigationManager.NavigateTo("/parents");
+	}
+
+}

@@ -1,0 +1,72 @@
+﻿@page "/parents/edit/{ParentId:guid}"
+@using BlazorApp.DTOs.ParentDtos
+@using BlazorApp.Models
+@using BlazorApp.Services
+@using Newtonsoft.Json
+
+@inject ParentService ParentService;
+@inject NavigationManager NavigationManager;
+<h3>Edit Parent</h3>
+
+<form class="">
+	<h4 class="text-center">Edit Parent</h4>
+
+	<div class="mb-3">
+		<label for="inputForFirstName" class="form-label">First Name</label>
+		<input type="text" class="form-control" id="inputForFirstName" contenteditable="true" @bind="parent.FirstName">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForLastName" class="form-label">Last Name</label>
+		<input type="text" class="form-control" id="inputForLastName" @bind="@parent.LastName" contenteditable="true">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForUsername" class="form-label">UserNAme</label>
+		<input type="text" class="form-control" id="inputForUsername" @bind="@parent.Username" contenteditable="true">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForHomeAddress" class="form-label">Home Address</label>
+		<input type="text" class="form-control" id="inputForHomeAddress" @bind="@parent.FirstName" contenteditable="true">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForPhone1" class="form-label">Phone1</label>
+		<input type="text" class="form-control" id="inputForPhone1" @bind="@parent.Phone1" contenteditable="true">
+	</div>
+
+	<div class="mb-3">
+		<label for="inputForWorkPhone" class="form-label">Work Phone</label>
+		<input type="text" class="form-control" id="inputForWorkPhone" @bind="@parent.WorkPhone" contenteditable="true">
+	</div>
+
+
+	<div class="mb-3">
+		<label for="inputForHomePhone" class="form-label">Home Phone</label>
+		<input type="text" class="form-control" id="inputForHomePhone" @bind="@parent.HomePhone" contenteditable="true">
+	</div>
+
+	<button type="button" class="btn btn-primary" @onclick="onSubmit">Submit</button>
+</form>
+
+@code {
+
+	[Parameter]
+	public Guid ParentId { get; set; }
+	private EditParentDto parent = new EditParentDto();
+	protected override async Task OnInitializedAsync()
+	{
+		var response = await ParentService.GetparentById(ParentId);
+		parent = JsonConvert.DeserializeObject<EditParentDto>(response.data.ToString());
+	}
+
+	private async void onSubmit()
+	{
+
+		await ParentService.Editparent(ParentId, parent);
+		NavigationManager.NavigateTo("/parents");
+
+	}
+
+}
