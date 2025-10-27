@@ -1,6 +1,7 @@
 ﻿@page "/parents/edit/{ParentId:guid}"
 @using BlazorApp.DTOs.ParentDtos
 @using BlazorApp.Models
+@using BlazorApp.Responses
 @using BlazorApp.Services
 @using Newtonsoft.Json
 
@@ -14,37 +15,113 @@
 	<div class="mb-3">
 		<label for="inputForFirstName" class="form-label">First Name</label>
 		<input type="text" class="form-control" id="inputForFirstName" contenteditable="true" @bind="parent.FirstName">
+
+		@if (errors.ContainsKey("FirstName"))
+		{
+			foreach (var error in errors["FirstName"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
+
 	</div>
 
 	<div class="mb-3">
 		<label for="inputForLastName" class="form-label">Last Name</label>
 		<input type="text" class="form-control" id="inputForLastName" @bind="@parent.LastName" contenteditable="true">
+
+		@if (errors.ContainsKey("LastName"))
+		{
+			foreach (var error in errors["LastName"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
+
 	</div>
 
 	<div class="mb-3">
 		<label for="inputForUsername" class="form-label">UserNAme</label>
 		<input type="text" class="form-control" id="inputForUsername" @bind="@parent.Username" contenteditable="true">
+
+		@if (errors.ContainsKey("Username"))
+		{
+			foreach (var error in errors["Username"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
 	</div>
 
 	<div class="mb-3">
 		<label for="inputForHomeAddress" class="form-label">Home Address</label>
-		<input type="text" class="form-control" id="inputForHomeAddress" @bind="@parent.FirstName" contenteditable="true">
+		<input type="text" class="form-control" id="inputForHomeAddress" @bind="@parent.HomeAddress" contenteditable="true">
+
+		@if (errors.ContainsKey("HomeAddress"))
+		{
+			foreach (var error in errors["HomeAddress"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
+
 	</div>
 
 	<div class="mb-3">
 		<label for="inputForPhone1" class="form-label">Phone1</label>
 		<input type="text" class="form-control" id="inputForPhone1" @bind="@parent.Phone1" contenteditable="true">
+
+		@if (errors.ContainsKey("Phone1"))
+		{
+			foreach (var error in errors["Phone1"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
+
 	</div>
 
 	<div class="mb-3">
 		<label for="inputForWorkPhone" class="form-label">Work Phone</label>
 		<input type="text" class="form-control" id="inputForWorkPhone" @bind="@parent.WorkPhone" contenteditable="true">
+
+		@if (errors.ContainsKey("WorkPhone"))
+		{
+			foreach (var error in errors["WorkPhone"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
+
 	</div>
 
 
 	<div class="mb-3">
 		<label for="inputForHomePhone" class="form-label">Home Phone</label>
 		<input type="text" class="form-control" id="inputForHomePhone" @bind="@parent.HomePhone" contenteditable="true">
+
+		@if (errors.ContainsKey("HomePhone"))
+		{
+			foreach (var error in errors["HomePhone"])
+			{
+				<p class="text-danger text-sm-start">@error</p>
+
+			}
+
+		}
+
 	</div>
 
 	<button type="button" class="btn btn-primary" @onclick="onSubmit">Submit</button>
@@ -55,6 +132,7 @@
 	[Parameter]
 	public Guid ParentId { get; set; }
 	private EditParentDto parent = new EditParentDto();
+	private Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
 	protected override async Task OnInitializedAsync()
 	{
 		var response = await ParentService.GetparentById(ParentId);
@@ -64,8 +142,20 @@
 	private async void onSubmit()
 	{
 
-		await ParentService.Editparent(ParentId, parent);
-		NavigationManager.NavigateTo("/parents");
+		errors.Clear();
+		var response = await ParentService.Editparent(ParentId, parent);
+		if (response.IsSuccessStatusCode)
+		{
+			NavigationManager.NavigateTo("/parents");
+
+		}
+		else
+		{
+			var errrorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+			errors = errrorResponse.errors;
+
+			StateHasChanged();
+		}
 
 	}
 
