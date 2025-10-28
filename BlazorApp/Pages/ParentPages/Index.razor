@@ -62,19 +62,75 @@
 				
 			}
 		</tbody>
+		<div class="d-flex gap-3 m-1">
+			<button class=" bi bi-caret-left-fill border-0" @onclick="HandlePrevious" disabled="@PreviousBool"></button>
+			<button class=" bi bi-caret-right-fill border-0" @onclick="HandleNext" disabled="@NextBool"></button>
+		</div>
 	</table>
 </div>
 
 @code {
 
 	private List<ParentModel> parents = new List<ParentModel>();
-	private int page = 1;
-	private int pageSize = 10;
+	private decimal page = 1;
+	private decimal pageSize = 2;
+	private decimal total;
+	private bool NextBool;
+	private bool PreviousBool;
 
 	protected override async Task OnInitializedAsync()
 	{
-		var response = await ParentService.GetAllparents(page, pageSize);
+		await GetParents();
+	}
+
+	private async void HandleNext()
+	{
+		if (page < total)
+		{
+			page += 1;
+			await GetParents();
+			StateHasChanged();
+
+		}
+	}
+
+	private async void HandlePrevious()
+	{
+		if (page > 1)
+		{
+			page -= 1;
+			await GetParents();
+			StateHasChanged();
+
+		}
+	}
+
+	private async Task GetParents()
+	{
+		var response = await ParentService.GetAllparents((int)page, (int)pageSize);
 		parents = JsonConvert.DeserializeObject<List<ParentModel>>(response.data.ToString());
+		page = response.page;
+		pageSize = (decimal)response.pageSize;
+		Console.WriteLine($"Total: {response.total} pageSize: {pageSize}");
+		total = Math.Ceiling(response.total / pageSize);
+		Console.WriteLine($"Total: {total}");
+		if (page >= total)
+		{
+			NextBool = true;
+		}
+		else
+		{
+			NextBool = false;
+		}
+
+		if (page != 1)
+		{
+			PreviousBool = false;
+		}
+		else
+		{
+			PreviousBool = true;
+		}
 	}
 
 }
